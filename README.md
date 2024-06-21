@@ -29,7 +29,7 @@
 1. Клонируйте репозиторий:
 
     ```sh
-    git clone https://github.com/your-username/telegram-transmission-bot.git
+    git clone https://github.com/mariiko-dev/jellyfin-transmission.git
     cd telegram-transmission-bot
     ```
 
