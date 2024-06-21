@@ -59,7 +59,7 @@
 - **jellyfin**: Медиа-сервер Jellyfin
 
 ## Структура проекта 📂
-
+```
 telegram-transmission-bot/
 ├── config/
 │   └── transmission.js
@@ -72,6 +72,7 @@ telegram-transmission-bot/
 ├── Dockerfile
 ├── docker-compose.yml
 └── .env
+```
 
 ## Разработка 🧑‍💻
 
