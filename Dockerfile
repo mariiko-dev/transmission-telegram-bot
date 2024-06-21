@@ -1,4 +1,12 @@
-FROM ubuntu:latest
-LABEL authors="vma"
+FROM node:18
 
-ENTRYPOINT ["top", "-b"]
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

@@ -1,0 +1,48 @@
+services:
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - TRANSMISSION_WEB_UI=combustion
+      - USER=${TRANSMISSION_USERNAME}
+      - PASS=${TRANSMISSION_PASSWORD}
+    volumes:
+      - ./config/transmission:/config
+      - ./media:/downloads
+    ports:
+      - "9091:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+    restart: unless-stopped
+
+  telegram-bot:
+    build: .
+    container_name: telegram-bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TRANSMISSION_HOST=transmission
+      - TRANSMISSION_PORT=9091
+      - TRANSMISSION_USERNAME=${TRANSMISSION_USERNAME}
+      - TRANSMISSION_PASSWORD=${TRANSMISSION_PASSWORD}
+      - WHITELISTED_USERS=${WHITELISTED_USERS}
+    depends_on:
+      - transmission
+    restart: unless-stopped
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    ports:
+      - "8096:8096"
+      - "8920:8920"
+    volumes:
+      - ./config/jellyfin:/config
+      - ./media:/media
+    restart: unless-stopped
+
+volumes:
+  config:
+  media:
