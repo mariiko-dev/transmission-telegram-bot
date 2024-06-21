@@ -60,7 +60,6 @@
 
 ## Структура проекта 📂
 
-```plaintext
 telegram-transmission-bot/
 ├── config/
 │   └── transmission.js
