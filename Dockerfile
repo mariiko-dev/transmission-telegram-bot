@@ -1,5 +1,5 @@
 # Используйте официальный образ Node.js в качестве базового образа
-FROM node:16
+FROM node:18
 
 WORKDIR /usr/src/app
 
