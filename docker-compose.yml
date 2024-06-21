@@ -7,8 +7,8 @@ services:
       - PGID=1000
       - TZ=Etc/UTC
       - TRANSMISSION_WEB_UI=combustion
-      - USER=your_username
-      - PASS=your_password
+      - USER=${TRANSMISSION_USERNAME}
+      - PASS=${TRANSMISSION_PASSWORD}
     volumes:
       - ./config/transmission:/config
       - ./media:/downloads
