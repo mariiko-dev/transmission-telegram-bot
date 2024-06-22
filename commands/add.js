@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
+const { transmission } = require('../transmission');
+const startCommand = require('./start');
 
-const addUrlOrMagnet = (bot, msg, match, transmission) => {
-    const url = match[1];
+const addUrlOrMagnet = (bot, msg, match, lastMessageId) => {
+    const url = match[0];
     const chatId = msg.chat.id;
     const userId = msg.from.username;
 
@@ -11,6 +11,10 @@ const addUrlOrMagnet = (bot, msg, match, transmission) => {
     if (!whitelistedUsers.includes(userId)) {
         bot.sendMessage(chatId, "Извините, вы не имеете доступа к этому боту.");
         return;
+    }
+
+    if (lastMessageId[chatId]) {
+        bot.deleteMessage(chatId, lastMessageId[chatId]).catch(err => console.log(`Failed to delete message: ${err}`));
     }
 
     if (url.startsWith('magnet:') || url.startsWith('http')) {
@@ -18,50 +22,43 @@ const addUrlOrMagnet = (bot, msg, match, transmission) => {
             if (err) {
                 bot.sendMessage(chatId, `Ошибка добавления торрента: ${err.message}`);
             } else {
-                bot.sendMessage(chatId, `Торрент добавлен! ID: ${result.id}`);
+                const torrentName = result.name;
+                bot.sendMessage(chatId, `Торрент добавлен: ${torrentName}`)
+                    .then(sentMsg => {
+                        lastMessageId[chatId] = sentMsg.message_id;
+                        bot.deleteMessage(chatId, msg.message_id).catch(err => console.log(`Failed to delete message: ${err}`));
+                        setTimeout(() => {
+                            bot.deleteMessage(chatId, sentMsg.message_id).catch(err => console.log(`Failed to delete message: ${err}`));
+                            startCommand.showMainMenu(bot, { chat: { id: chatId }, from: { username: userId } }, lastMessageId);
+                        }, 3000);
+                    });
             }
         });
     } else {
-        bot.sendMessage(chatId, `Неверная ссылка. Пожалуйста, предоставьте действительный magnet-ссылку или URL.`);
+        bot.sendMessage(chatId, `Неверная ссылка. Пожалуйста, предоставьте действительную magnet-ссылку или URL.`);
     }
 };
 
-const handleDocument = (bot, msg, transmission) => {
-    const fileId = msg.document.file_id;
+const handleAddTorrent = (bot, msg, lastMessageId) => {
     const chatId = msg.chat.id;
-    const userId = msg.from.username;
 
-    const whitelistedUsers = process.env.WHITELISTED_USERS.split(',');
-
-    if (!whitelistedUsers.includes(userId)) {
-        bot.sendMessage(chatId, "Извините, вы не имеете доступа к этому боту.");
-        return;
+    if (lastMessageId[chatId]) {
+        bot.deleteMessage(chatId, lastMessageId[chatId]).catch(err => console.log(`Failed to delete message: ${err}`));
     }
 
-    bot.getFileLink(fileId).then((fileLink) => {
-        const filePath = path.join(__dirname, '..', 'downloads', msg.document.file_name);
-        const fileStream = fs.createWriteStream(filePath);
+    const options = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "Назад", callback_data: 'back_to_main' }]
+            ]
+        }
+    };
 
-        bot.downloadFile(fileId, filePath).then(() => {
-            fs.readFile(filePath, (err, data) => {
-                if (err) {
-                    bot.sendMessage(chatId, `Ошибка чтения файла: ${err.message}`);
-                } else {
-                    transmission.addBase64(data.toString('base64'), { filename: msg.document.file_name }, (err, result) => {
-                        if (err) {
-                            bot.sendMessage(chatId, `Ошибка добавления торрента: ${err.message}`);
-                        } else {
-                            bot.sendMessage(chatId, `Торрент добавлен! ID: ${result.id}`);
-                        }
-                    });
-                }
-                fs.unlinkSync(filePath);
-            });
-        }).catch((err) => {
-            bot.sendMessage(chatId, `Ошибка загрузки файла: ${err.message}`);
-        });
-    });
+    bot.sendMessage(chatId, "Отправьте в чат магнит-ссылку.", options)
+        .then(sentMsg => lastMessageId[chatId] = sentMsg.message_id);
 };
 
-module.exports = addUrlOrMagnet;
-module.exports.handleDocument = handleDocument;
+module.exports = {
+    addUrlOrMagnet,
+    handleAddTorrent
+};

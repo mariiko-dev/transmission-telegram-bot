@@ -1,17 +1,20 @@
-module.exports = (bot, msg) => {
+module.exports.showMainMenu = (bot, msg, lastMessageId) => {
     const chatId = msg.chat.id;
     const userId = msg.from.username;
 
-    const whitelistedUsers = process.env.WHITELISTED_USERS.split(',');
+    const options = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: "Добавить торрент", callback_data: 'add' }],
+                [{ text: "Список торрентов", callback_data: 'list' }]
+            ]
+        }
+    };
 
-    if (!whitelistedUsers.includes(userId)) {
-        bot.sendMessage(chatId, "Извините, вы не имеете доступа к этому боту.");
-        return;
+    if (lastMessageId[chatId]) {
+        bot.deleteMessage(chatId, lastMessageId[chatId]).catch(err => console.log(`Failed to delete message: ${err}`));
     }
 
-    bot.sendMessage(chatId, "Привет! Я бот для управления Transmission. Вот доступные команды:\n" +
-        "/add <url или magnet-ссылка> - добавить торрент\n" +
-        "Просто отправьте файл торрента, чтобы добавить его.\n" +
-        "/list - список текущих торрент-загрузок\n" +
-        "/remove <id> - удалить торрент по ID");
+    bot.sendMessage(chatId, `Привет! Что вы хотите сделать?`, options)
+        .then(sentMsg => lastMessageId[chatId] = sentMsg.message_id);
 };
