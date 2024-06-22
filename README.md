@@ -1,4 +1,4 @@
-# 📦 Transmission Bot
+# 📦 Transmission Bot Telegram
 
 Этот проект создан для быстрой и удобной загрузки видеофайлов через торренты. Он предоставляет Telegram-бота, который взаимодействует с Transmission для управления загрузками и с Jellyfin для организации и потоковой передачи медиафайлов. Бот поддерживает добавление торрентов через URL, magnet-ссылки или файлы, и включает белый список авторизованных пользователей для обеспечения безопасности.
 
@@ -52,7 +52,7 @@ telegram-transmission-bot/
 
 
 ### 🐋 Конфигурация Docker Compose
-Вот конфигурация docker-compose.yml:
+ docker-compose.yml:
 
 ```yaml
 services:
@@ -104,13 +104,55 @@ volumes:
   config:
   media:
 ```
+### 🐋 Конфигурация Docker Compose с Jellyfin
+ docker-compose.yml:
+
+```yaml
+services:
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - TRANSMISSION_WEB_UI=combustion
+      - USER=${TRANSMISSION_USERNAME}
+      - PASS=${TRANSMISSION_PASSWORD}
+    volumes:
+      - ./config/transmission:/config
+      - ./media:/downloads
+    ports:
+      - "9091:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+    restart: unless-stopped
+
+  telegram-bot:
+    build: .
+    container_name: telegram-bot
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TRANSMISSION_HOST=transmission
+      - TRANSMISSION_PORT=9091
+      - TRANSMISSION_USERNAME=${TRANSMISSION_USERNAME}
+      - TRANSMISSION_PASSWORD=${TRANSMISSION_PASSWORD}
+      - WHITELISTED_USERS=${WHITELISTED_USERS}
+    depends_on:
+      - transmission
+    restart: unless-stopped
+
+volumes:
+  config:
+  media:
+```
 
 
 ### 🚀 Запуск контейнеров
 Запустите следующие команды для сборки и запуска Docker-контейнеров:
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 ### 🛠 Команды бота
