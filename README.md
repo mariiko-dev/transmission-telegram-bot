@@ -30,8 +30,9 @@ cd transmission_jellyfine_bot
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 TRANSMISSION_USERNAME=your_transmission_username
 TRANSMISSION_PASSWORD=your_transmission_password
-WHITELISTED_USERS=user1,user2
+WHITELISTED_USERS=tg_username1,username2,botname
 ```
+Обязательно добавьте ник бота в белый список ‼️
 
 
 ### 📂 Структура каталогов
