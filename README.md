@@ -90,17 +90,6 @@ services:
       - transmission
     restart: unless-stopped
 
-  jellyfin:
-    image: jellyfin/jellyfin
-    container_name: jellyfin
-    ports:
-      - "8096:8096"
-      - "8920:8920"
-    volumes:
-      - ./config/jellyfin:/config
-      - ./media:/media
-    restart: unless-stopped
-
 volumes:
   config:
   media:
@@ -141,6 +130,17 @@ services:
       - WHITELISTED_USERS=${WHITELISTED_USERS}
     depends_on:
       - transmission
+    restart: unless-stopped
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    ports:
+      - "8096:8096"
+      - "8920:8920"
+    volumes:
+      - ./config/jellyfin:/config
+      - ./media:/media
     restart: unless-stopped
 
 volumes:
